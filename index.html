@@ -3,170 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Collaborative Storybook</title>
+    <title>The Shared Chronicles</title>
     <!-- Include Supabase JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --bg-color: #fcfbf7;
-            --text-color: #2c2520;
-            --accent-color: #8b5a2b;
-            --border-color: #e6dfd3;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --border-color: #e2e8f0;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
         }
 
         body {
-            font-family: 'Georgia', serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.8;
+            color: var(--text-main);
+            line-height: 1.6;
             margin: 0;
             padding: 0;
         }
 
         .container {
-            max-width: 700px;
+            max-width: 680px;
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 60px 20px;
         }
 
         header {
-            text-align: center;
-            border-bottom: 2px double var(--border-color);
-            padding-bottom: 20px;
-            margin-bottom: 40px;
-            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 48px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
         }
 
         h1 {
-            font-weight: normal;
-            font-size: 2.5rem;
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
             margin: 0;
         }
 
-        .admin-btn {
-            position: absolute;
-            top: 0;
-            right: 0;
-            background: none;
+        .auth-buttons-container {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
             border: 1px solid var(--border-color);
-            padding: 5px 10px;
-            font-family: sans-serif;
-            font-size: 0.8rem;
+            padding: 8px 16px;
+            font-size: 0.875rem;
+            font-weight: 500;
             cursor: pointer;
-            border-radius: 4px;
-            color: #777;
+            border-radius: 6px;
+            color: var(--text-muted);
+            transition: all 0.2s ease;
         }
 
-        .admin-btn:hover {
-            background-color: #f0ede6;
+        .btn-secondary:hover {
+            background-color: #f1f5f9;
+            color: var(--text-main);
         }
 
-        .admin-badge {
-            background-color: #d9534f;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 3px;
-            font-family: sans-serif;
-            font-size: 0.8rem;
-            margin-left: 10px;
+        .status-badge {
+            background-color: #dcfce7;
+            color: #15803d;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
             display: none;
         }
 
         #book-feed {
-            margin-bottom: 60px;
-            min-height: 200px;
+            margin-bottom: 48px;
         }
 
-        .book-paragraph {
-            margin-bottom: 24px;
-            text-align: justify;
+        .book-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
             position: relative;
-            padding-right: 80px;
+            transition: box-shadow 0.2s ease;
         }
 
-        .author-name {
-            font-family: sans-serif;
-            font-size: 0.8rem;
-            color: var(--accent-color);
-            display: block;
-            margin-top: 4px;
-            font-style: italic;
+        .book-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .book-content {
+            font-size: 1.05rem;
+            color: var(--text-main);
+            margin: 0 0 12px 0;
+            white-space: pre-wrap;
+        }
+
+        .book-meta {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
         }
 
         .delete-btn {
             display: none;
             position: absolute;
-            right: 0;
-            top: 0;
-            background-color: #d9534f;
-            color: white;
+            right: 24px;
+            bottom: 24px;
+            background-color: #fee2e2;
+            color: var(--danger);
             border: none;
-            padding: 3px 8px;
-            font-family: sans-serif;
+            padding: 6px 12px;
             font-size: 0.75rem;
+            font-weight: 600;
             cursor: pointer;
-            border-radius: 3px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
         }
 
         .delete-btn:hover {
-            background-color: #c9302c;
+            background-color: var(--danger);
+            color: white;
         }
 
-        form {
-            background-color: #f5f1e8;
-            padding: 30px;
-            border-radius: 8px;
+        .form-card {
+            background-color: var(--card-bg);
+            padding: 32px;
+            border-radius: 16px;
             border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
-        h3 {
-            margin-top: 0;
-            font-family: sans-serif;
+        .form-card h3 {
+            margin: 0 0 24px 0;
+            font-size: 1.25rem;
             font-weight: 600;
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         label {
             display: block;
-            margin-bottom: 5px;
-            font-family: sans-serif;
-            font-size: 0.9rem;
-            font-weight: bold;
+            margin-bottom: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-main);
         }
 
         input[type="text"], input[type="email"], textarea {
             width: 100%;
-            padding: 10px;
+            padding: 10px 14px;
             border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-family: sans-serif;
+            border-radius: 8px;
+            font-size: 0.95rem;
             box-sizing: border-box;
             background-color: #fff;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
         }
 
         textarea {
-            font-family: 'Georgia', serif;
             resize: vertical;
-            height: 100px;
+            min-height: 110px;
+            font-family: inherit;
         }
 
         button[type="submit"] {
-            background-color: var(--accent-color);
+            background-color: var(--primary);
             color: white;
             border: none;
-            padding: 12px 20px;
-            font-size: 1rem;
+            padding: 12px 24px;
+            font-size: 0.95rem;
+            font-weight: 600;
             cursor: pointer;
-            border-radius: 4px;
-            font-family: sans-serif;
+            border-radius: 8px;
             width: 100%;
+            transition: background-color 0.2s ease;
         }
 
         button[type="submit"]:hover {
-            background-color: #6e4620;
+            background-color: var(--primary-hover);
+        }
+
+        /* MODERN DIALOG MODAL SYSTEM */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-container {
+            background-color: var(--card-bg);
+            padding: 32px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: scale(0.95);
+            transition: transform 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .modal-overlay.active .modal-container {
+            transform: scale(1);
+        }
+
+        .modal-header h3 {
+            margin: 0 0 8px 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .modal-header p {
+            margin: 0 0 24px 0;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
         }
     </style>
 </head>
@@ -175,42 +268,69 @@
     <div class="container">
         <header>
             <h1>The Shared Chronicles</h1>
-            <span id="admin-indicator" class="admin-badge">Admin Mode</span>
-            <button id="login-trigger" class="admin-btn" onclick="handleAdminLogin()">Admin Login</button>
+            <div class="auth-buttons-container">
+                <span id="authenticated-badge" class="status-badge">Session Active</span>
+                <button id="auth-trigger-btn" class="btn-secondary" onclick="openAuthModal()">Sign In</button>
+            </div>
         </header>
 
-        <!-- The Book Content -->
-        <div id="book-feed">Loading the book chapters...</div>
+        <!-- The Book Feed -->
+        <div id="book-feed">Loading workspace items...</div>
 
         <!-- Submission Form -->
-        <form id="contribution-form">
+        <div class="form-card">
             <h3>Add Your Chapter</h3>
-            <div class="form-group">
-                <label for="user-name">Your Name</label>
-                <input type="text" id="user-name" required placeholder="Jane Doe">
+            <form id="contribution-form">
+                <div class="form-group">
+                    <label for="user-name">Your Name</label>
+                    <input type="text" id="user-name" required placeholder="Jane Doe">
+                </div>
+                <div class="form-group">
+                    <label for="user-email">Your Email (Kept Private)</label>
+                    <input type="email" id="user-email" required placeholder="jane@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="user-content">Write your lines...</label>
+                    <textarea id="user-content" required placeholder="Continue the story here..."></textarea>
+                </div>
+                <button type="submit">Publish to Book</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODERN SIGN IN MODAL -->
+    <div id="auth-modal" class="modal-overlay" onclick="closeAuthModalViaOverlay(event)">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="modal-title">Sign In</h3>
+                <p id="modal-desc">Access secure parameters to manage log entries.</p>
             </div>
-            <div class="form-group">
-                <label for="user-email">Your Email (Kept Private)</label>
-                <input type="email" id="user-email" required placeholder="jane@example.com">
-            </div>
-            <div class="form-group">
-                <label for="user-content">Write your lines...</label>
-                <textarea id="user-content" required placeholder="Continue the story here..."></textarea>
-            </div>
-            <button type="submit">Publish to Book</button>
-        </form>
+            <form id="modal-auth-form" onsubmit="handleAuthSubmit(event)">
+                <div class="form-group">
+                    <label for="modal-username">Username or Email</label>
+                    <input type="text" id="modal-username" required placeholder="name@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="modal-password">Password</label>
+                    <input type="password" id="modal-password" required placeholder="••••••••">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeAuthModal()">Cancel</button>
+                    <button type="submit" style="background-color:var(--primary); color:white; border:none; padding:8px 16px; font-weight:600; border-radius:6px; cursor:pointer;">Continue</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script>
-        // 1. CONFIGURATION WITH YOUR COPIED KEYS
+        // 1. DATABASE ROUTING KEY CONFIGURATION
         const SUPABASE_URL = "https://xsixrrsqontpuvztdfvl.supabase.co"; 
         const SUPABASE_ANON_KEY = "sb_publishable_AWcPWAQUHTsifBfjtD6e6w_b9D_yFFn";
 
-        // Correct initialization utilizing the window namespace global initialization 
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        let isAdmin = false;
+        let sessionActive = false;
 
-        // 2. FETCH AND DISPLAY ENTRIES
+        // 2. RETRIEVE AND RENDER LOG LINES
         async function fetchBookLines() {
             const feed = document.getElementById('book-feed');
             
@@ -220,42 +340,43 @@
                 .order('created_at', { ascending: true });
 
             if (error) {
-                feed.innerHTML = "<p>Error loading the book. Check your Supabase configuration.</p>";
+                feed.innerHTML = "<div class='book-card'><p>Error establishing network synchronization pipeline.</p></div>";
                 console.error(error);
                 return;
             }
 
             if (!lines || lines.length === 0) {
-                feed.innerHTML = "<p style='text-align:center; color:#888;'>The book is currently empty. Be the first to add a line!</p>";
+                feed.innerHTML = "<div class='book-card' style='text-align:center; color:var(--text-muted);'>The book is currently empty. Be the first to add a line!</div>";
                 return;
             }
 
             feed.innerHTML = '';
             lines.forEach(line => {
-                const p = document.createElement('p');
-                p.className = 'book-paragraph';
+                const card = document.createElement('div');
+                card.className = 'book-card';
                 
-                const textContent = document.createTextNode(line.content);
-                p.appendChild(textContent);
+                const contentDiv = document.createElement('p');
+                contentDiv.className = 'book-content';
+                contentDiv.appendChild(document.createTextNode(line.content));
+                card.appendChild(contentDiv);
 
-                const authorSpan = document.createElement('span');
-                authorSpan.className = 'author-name';
-                authorSpan.innerText = `— ${line.name}`;
-                p.appendChild(authorSpan);
+                const metaDiv = document.createElement('div');
+                metaDiv.className = 'book-meta';
+                metaDiv.innerText = `By ${line.name}`;
+                card.appendChild(metaDiv);
 
-                // Delete button configuration (only rendered if user validates admin credentials)
                 const delBtn = document.createElement('button');
                 delBtn.className = 'delete-btn';
                 delBtn.innerText = 'Delete';
-                delBtn.style.display = isAdmin ? 'block' : 'none';
+                delBtn.style.display = sessionActive ? 'block' : 'none';
                 delBtn.onclick = () => deleteLine(line.id);
-                p.appendChild(delBtn);
+                card.appendChild(delBtn);
 
-                feed.appendChild(p);
+                feed.appendChild(card);
             });
         }
 
-        // 3. HANDLE NEW SUBMISSIONS
+        // 3. PERSIST NEW CONTENT LOG
         document.getElementById('contribution-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -268,48 +389,65 @@
                 .insert([{ name, email, content }]);
 
             if (error) {
-                alert('Could not submit your line: ' + error.message);
+                alert('Submission pipeline validation failed: ' + error.message);
             } else {
                 document.getElementById('user-content').value = '';
                 fetchBookLines();
             }
         });
 
-        // 4. ADMIN LOGIN UTILITY
-        function handleAdminLogin() {
-            if (isAdmin) {
-                isAdmin = false;
-                document.getElementById('admin-indicator').style.display = 'none';
-                document.getElementById('login-trigger').innerText = 'Admin Login';
+        // 4. CLIENT INTERFACE MODAL CONTROLS
+        function openAuthModal() {
+            if (sessionActive) {
+                sessionActive = false;
+                document.getElementById('authenticated-badge').style.display = 'none';
+                document.getElementById('auth-trigger-btn').innerText = 'Sign In';
                 fetchBookLines();
                 return;
             }
+            document.getElementById('auth-modal').classList.add('active');
+        }
 
-            const username = prompt("Enter Admin Username:");
-            const password = prompt("Enter Admin Password:");
+        function closeAuthModal() {
+            document.getElementById('auth-modal').classList.remove('active');
+            document.getElementById('modal-auth-form').reset();
+        }
 
-            if (username === "admin" && password === "admin123") {
-                isAdmin = true;
-                document.getElementById('admin-indicator').style.display = 'inline-block';
-                document.getElementById('login-trigger').innerText = 'Admin Logout';
-                fetchBookLines(); 
-            } else {
-                alert("Invalid admin credentials!");
+        function closeAuthModalViaOverlay(e) {
+            if (e.target.id === 'auth-modal') {
+                closeAuthModal();
             }
         }
 
-        // 5. ADMIN ACTION: DELETE ENTRY
+        // 5. VALIDATE PRIVILEGES
+        function handleAuthSubmit(e) {
+            e.preventDefault();
+            const u = document.getElementById('modal-username').value;
+            const p = document.getElementById('modal-password').value;
+
+            if (u === "admin" && p === "admin123") {
+                sessionActive = true;
+                document.getElementById('authenticated-badge').style.display = 'inline-block';
+                document.getElementById('auth-trigger-btn').innerText = 'Sign Out';
+                closeAuthModal();
+                fetchBookLines(); 
+            } else {
+                alert("Authentication credentials rejected.");
+            }
+        }
+
+        // 6. PURGE LOG LINE DIRECTIVE
         async function deleteLine(id) {
-            if (!isAdmin) return;
+            if (!sessionActive) return;
             
-            if (confirm("Are you sure you want to delete this line from the book?")) {
+            if (confirm("Confirm removal of this record step from the database?")) {
                 const { error } = await supabaseClient
                     .from('book_lines')
                     .delete()
                     .eq('id', id);
 
                 if (error) {
-                    alert('Error deleting line: ' + error.message);
+                    alert('Purge operation fault: ' + error.message);
                 } else {
                     fetchBookLines();
                 }
