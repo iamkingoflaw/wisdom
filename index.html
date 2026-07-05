@@ -206,14 +206,15 @@
         const SUPABASE_URL = "https://xsixrrsqontpuvztdfvl.supabase.co"; 
         const SUPABASE_ANON_KEY = "sb_publishable_AWcPWAQUHTsifBfjtD6e6w_b9D_yFFn";
 
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Correct initialization utilizing the window namespace global initialization 
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let isAdmin = false;
 
         // 2. FETCH AND DISPLAY ENTRIES
         async function fetchBookLines() {
             const feed = document.getElementById('book-feed');
             
-            let { data: lines, error } = await supabase
+            let { data: lines, error } = await supabaseClient
                 .from('book_lines')
                 .select('id, name, content')
                 .order('created_at', { ascending: true });
@@ -224,7 +225,7 @@
                 return;
             }
 
-            if (lines.length === 0) {
+            if (!lines || lines.length === 0) {
                 feed.innerHTML = "<p style='text-align:center; color:#888;'>The book is currently empty. Be the first to add a line!</p>";
                 return;
             }
@@ -234,7 +235,6 @@
                 const p = document.createElement('p');
                 p.className = 'book-paragraph';
                 
-                // Escape simple HTML text to prevent XSS injection
                 const textContent = document.createTextNode(line.content);
                 p.appendChild(textContent);
 
@@ -243,7 +243,7 @@
                 authorSpan.innerText = `— ${line.name}`;
                 p.appendChild(authorSpan);
 
-                // Add delete button hidden by default (visible only if isAdmin is true)
+                // Delete button configuration (only rendered if user validates admin credentials)
                 const delBtn = document.createElement('button');
                 delBtn.className = 'delete-btn';
                 delBtn.innerText = 'Delete';
@@ -263,14 +263,13 @@
             const email = document.getElementById('user-email').value;
             const content = document.getElementById('user-content').value;
 
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('book_lines')
                 .insert([{ name, email, content }]);
 
             if (error) {
                 alert('Could not submit your line: ' + error.message);
             } else {
-                // Clear the content textarea and reload the book
                 document.getElementById('user-content').value = '';
                 fetchBookLines();
             }
@@ -279,7 +278,6 @@
         // 4. ADMIN LOGIN UTILITY
         function handleAdminLogin() {
             if (isAdmin) {
-                // Logout logic
                 isAdmin = false;
                 document.getElementById('admin-indicator').style.display = 'none';
                 document.getElementById('login-trigger').innerText = 'Admin Login';
@@ -294,7 +292,7 @@
                 isAdmin = true;
                 document.getElementById('admin-indicator').style.display = 'inline-block';
                 document.getElementById('login-trigger').innerText = 'Admin Logout';
-                fetchBookLines(); // Refresh to show delete buttons
+                fetchBookLines(); 
             } else {
                 alert("Invalid admin credentials!");
             }
@@ -305,7 +303,7 @@
             if (!isAdmin) return;
             
             if (confirm("Are you sure you want to delete this line from the book?")) {
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('book_lines')
                     .delete()
                     .eq('id', id);
@@ -318,7 +316,6 @@
             }
         }
 
-        // Load the book automatically on page load
         window.onload = fetchBookLines;
     </script>
 </body>
